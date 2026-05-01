@@ -3,152 +3,329 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Francisco Javier Oliver – Executive Operations</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;500;700&display=swap" rel="stylesheet">
+  <title>CV Arcade - Pong</title>
   <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      margin: 0;
-      background: #f0f2f5;
-      color: #333;
+    :root {
+      color-scheme: dark;
     }
-    header {
-      background: #0a3d62;
-      color: white;
-      padding: 40px 20px;
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(circle at top, #1c2238 0%, #0b0f1d 55%, #04050c 100%);
+      color: #f0f3ff;
+      padding: 20px;
+    }
+
+    .game-shell {
+      width: min(100%, 900px);
+      display: grid;
+      gap: 14px;
+      justify-items: center;
+    }
+
+    .ui {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 12px 20px;
+      background: rgba(10, 15, 34, 0.7);
+      border: 1px solid rgba(145, 162, 255, 0.35);
+      border-radius: 12px;
+      padding: 12px 16px;
+      backdrop-filter: blur(4px);
+    }
+
+    .score {
+      font-size: clamp(1rem, 3vw, 1.3rem);
+      letter-spacing: 0.03em;
+    }
+
+    .score strong {
+      color: #7de2ff;
+      font-size: 1.4em;
+      margin-left: 6px;
+      min-width: 1.5ch;
+      display: inline-block;
       text-align: center;
     }
-    header h1 {
-      margin: 0;
-      font-size: 2.5em;
+
+    .controls-hint {
+      font-size: 0.9rem;
+      opacity: 0.85;
     }
-    header p {
-      margin: 10px 0;
-      font-size: 1.2em;
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #0a1026;
+      background: linear-gradient(180deg, #a6b4ff 0%, #7de2ff 100%);
+      transition: transform 0.15s ease, filter 0.15s ease;
     }
-    .container {
-      max-width: 1000px;
-      margin: auto;
-      padding: 20px;
-      background: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-top: -30px;
-      border-radius: 8px;
+
+    button:hover {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
     }
-    h2 {
-      color: #0a3d62;
-      border-bottom: 2px solid #eee;
-      padding-bottom: 5px;
+
+    #pong {
+      width: min(100%, 800px);
+      height: auto;
+      background: #02040f;
+      border: 2px solid rgba(125, 226, 255, 0.35);
+      border-radius: 12px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55);
     }
-    ul {
-      padding-left: 20px;
-    }
-    .button {
-      display: inline-block;
-      padding: 10px 20px;
-      background: #0a3d62;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      margin-top: 10px;
-    }
-    .contact a {
-      color: #0a3d62;
-      text-decoration: none;
+
+    #status {
+      min-height: 1.4rem;
+      text-align: center;
+      font-weight: 600;
+      color: #ffd98a;
     }
   </style>
 </head>
 <body>
+  <main class="game-shell">
+    <section class="ui" aria-label="Marcador">
+      <div class="score">Jugador <strong id="playerScore">0</strong></div>
+      <div class="score">CPU <strong id="cpuScore">0</strong></div>
+      <button id="restartBtn" type="button">Reiniciar</button>
+      <div class="controls-hint">Controles: W/S o ↑/↓</div>
+    </section>
 
-<header>
-  <h1>Francisco Javier Oliver</h1>
-  <p>Executive in Global Operations & Partnerships</p>
-  <p>Palma de Mallorca, Spain · Hybrid</p>
-</header>
+    <canvas id="pong" width="800" height="500"></canvas>
+    <div id="status" role="status" aria-live="polite"></div>
+  </main>
 
-<div class="container">
-  <section class="contact">
-    <h2>📬 Contacto</h2>
-    <p>Email: <a href="mailto:paco.oliver@outloo.es">paco.oliver@outloo.es</a></p>
-    <p>Teléfono: +34 659657251</p>
-    <p>LinkedIn: <a href="https://www.linkedin.com/in/francisco-javier-oliver-molina-a52ba5116/" target="_blank">Perfil Profesional</a></p>
-    <a class="button" href="Francisco_Javier_Oliver_Executive_Operations_Resume_FINAL.pdf" download>📄 Descargar CV</a>
-  </section>
+  <script>
+    const canvas = document.getElementById("pong");
+    const ctx = canvas.getContext("2d");
+    const playerScoreEl = document.getElementById("playerScore");
+    const cpuScoreEl = document.getElementById("cpuScore");
+    const statusEl = document.getElementById("status");
+    const restartBtn = document.getElementById("restartBtn");
 
-  <section>
-    <h2>🧭 Resumen Profesional</h2>
-    <p>Ejecutivo con más de 14 años de experiencia internacional en operaciones, asociaciones estratégicas y atención al cliente en sectores como turismo, logística de viajes y hospitalidad. Experto en gestión de socios de alto perfil (Disney), resolución de crisis y expansión de mercados globales.</p>
-  </section>
+    const MAX_SCORE = 7;
+    const paddleWidth = 14;
+    const paddleHeight = 90;
+    const paddleSpeed = 7;
+    const ballRadius = 9;
 
-  <section>
-    <h2>🛠️ Competencias Clave</h2>
-    <ul>
-      <li>Gestión de Operaciones Globales</li>
-      <li>Relación con Socios Estratégicos</li>
-      <li>Resolución de Crisis y Emergencias</li>
-      <li>Estrategia de Distribución y Ticketing</li>
-      <li>Experiencia del Cliente y Retención</li>
-      <li>Integración de Datos y Tecnología</li>
-      <li>Liderazgo Multicultural</li>
-    </ul>
-  </section>
+    const paddleLeft = {
+      x: 20,
+      y: (canvas.height - paddleHeight) / 2,
+      width: paddleWidth,
+      height: paddleHeight,
+      speed: paddleSpeed,
+      moveUp: false,
+      moveDown: false,
+    };
 
-  <section>
-    <h2>💼 Experiencia Profesional</h2>
-    <p><strong>HBX Group – Theme Parks Executive</strong> (Mar 2023 - Presente)</p>
-    <ul>
-      <li>Gestión de operaciones globales para parques temáticos, incluyendo Disney.</li>
-      <li>Optimización de procesos de distribución y reservas.</li>
-      <li>Implementación de KPIs y mejoras operativas.</li>
-    </ul>
+    const paddleRight = {
+      x: canvas.width - paddleWidth - 20,
+      y: (canvas.height - paddleHeight) / 2,
+      width: paddleWidth,
+      height: paddleHeight,
+      speed: 5.8,
+    };
 
-    <p><strong>Emergency & Customer Service Operations Executive</strong> (Feb 2022 - Presente)</p>
-    <ul>
-      <li>Resolución de emergencias de viaje con tasa de éxito del 97%.</li>
-      <li>Diseño de estrategias de retención y análisis de comportamiento del cliente.</li>
-    </ul>
+    const ball = {
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      radius: ballRadius,
+      vx: 5.5,
+      vy: 3,
+      speedMax: 10,
+    };
 
-    <p><strong>Ayuntamiento de Calviá – Voluntario</strong> (Jun 2021 - Feb 2022)</p>
-    <ul>
-      <li>Apoyo a personas con discapacidad mediante talleres inclusivos.</li>
-    </ul>
+    const scores = {
+      player: 0,
+      cpu: 0,
+      winner: null,
+      isGameOver: false,
+    };
 
-    <p><strong>W2M WORLD2MEET – Ejecutivo de Operaciones</strong> (Abr 2018 - Mar 2021)</p>
-    <ul>
-      <li>Gestión de emergencias nocturnas y coordinación de soluciones logísticas.</li>
-    </ul>
+    function drawNet() {
+      ctx.setLineDash([8, 12]);
+      ctx.strokeStyle = "rgba(160, 190, 255, 0.35)";
+      ctx.beginPath();
+      ctx.moveTo(canvas.width / 2, 0);
+      ctx.lineTo(canvas.width / 2, canvas.height);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
 
-    <p><strong>Hotel BH / Cursach Hotels Group – Ejecutivo Comercial & MICE</strong> (Jul 2017 - Mar 2018)</p>
-    <ul>
-      <li>Dirección de eventos y desarrollo comercial internacional.</li>
-    </ul>
-  </section>
+    function drawPaddle(paddle, color = "#d6dcff") {
+      ctx.fillStyle = color;
+      ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+    }
 
-  <section>
-    <h2>🎓 Educación</h2>
-    <ul>
-      <li>ES POLITECNIC – Ingeniería Electrónica (1989)</li>
-      <li>Corpus Christi – Bachillerato (1984)</li>
-    </ul>
-  </section>
+    function drawBall() {
+      ctx.fillStyle = "#7de2ff";
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
-  <section>
-    <h2>📜 Certificaciones</h2>
-    <ul>
-      <li>Excel 365 Avanzado, Copilot, Prompt Engineering</li>
-      <li>CompTIA A+, Network+, Google Analytics</li>
-      <li>Servicio al Cliente, Comunicación bajo presión</li>
-    </ul>
-  </section>
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawNet();
+      drawPaddle(paddleLeft);
+      drawPaddle(paddleRight, "#ffd98a");
+      drawBall();
+    }
 
-  <section>
-    <h2>🧠 Habilidades</h2>
-    <ul>
-      <li>Técnicas: Excel 365, Copilot, Análisis de Datos</li>
-      <li>Blandas: Liderazgo, Resolución de Conflictos, Comunicación Multilingüe</li>
-    </ul>
-  </section>
-</div>
+    function clampPaddle(paddle) {
+      if (paddle.y < 0) paddle.y = 0;
+      if (paddle.y + paddle.height > canvas.height) {
+        paddle.y = canvas.height - paddle.height;
+      }
+    }
 
+    function resetBall(scoredByPlayer = true) {
+      ball.x = canvas.width / 2;
+      ball.y = canvas.height / 2;
+
+      const baseSpeedX = 5.2;
+      const randomY = (Math.random() * 4) - 2;
+      ball.vx = scoredByPlayer ? -baseSpeedX : baseSpeedX;
+      ball.vy = randomY;
+    }
+
+    function checkCollisions() {
+      if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= canvas.height) {
+        ball.vy *= -1;
+        ball.y = ball.y - ball.radius <= 0 ? ball.radius : canvas.height - ball.radius;
+      }
+
+      const hitLeft =
+        ball.x - ball.radius <= paddleLeft.x + paddleLeft.width &&
+        ball.y >= paddleLeft.y &&
+        ball.y <= paddleLeft.y + paddleLeft.height &&
+        ball.vx < 0;
+
+      const hitRight =
+        ball.x + ball.radius >= paddleRight.x &&
+        ball.y >= paddleRight.y &&
+        ball.y <= paddleRight.y + paddleRight.height &&
+        ball.vx > 0;
+
+      if (hitLeft || hitRight) {
+        const paddle = hitLeft ? paddleLeft : paddleRight;
+        const relativeIntersectY = (ball.y - (paddle.y + paddle.height / 2)) / (paddle.height / 2);
+        const bounceAngle = relativeIntersectY * (Math.PI / 3);
+        const direction = hitLeft ? 1 : -1;
+        const speed = Math.min(Math.abs(ball.vx) + 0.45, ball.speedMax);
+
+        ball.vx = Math.cos(bounceAngle) * speed * direction;
+        ball.vy = Math.sin(bounceAngle) * speed;
+
+        if (hitLeft) {
+          ball.x = paddleLeft.x + paddleLeft.width + ball.radius;
+        } else {
+          ball.x = paddleRight.x - ball.radius;
+        }
+      }
+
+      if (ball.x + ball.radius < 0) {
+        scores.cpu += 1;
+        cpuScoreEl.textContent = String(scores.cpu);
+        resetBall(false);
+      } else if (ball.x - ball.radius > canvas.width) {
+        scores.player += 1;
+        playerScoreEl.textContent = String(scores.player);
+        resetBall(true);
+      }
+
+      if (!scores.isGameOver && (scores.player >= MAX_SCORE || scores.cpu >= MAX_SCORE)) {
+        scores.isGameOver = true;
+        scores.winner = scores.player >= MAX_SCORE ? "Jugador" : "CPU";
+        statusEl.textContent = `🏆 ${scores.winner} gana la partida (${scores.player}-${scores.cpu}). Pulsa Reiniciar.`;
+      }
+    }
+
+    function aiMove() {
+      const targetY = ball.y - paddleRight.height / 2;
+      const delta = targetY - paddleRight.y;
+      if (Math.abs(delta) < paddleRight.speed) {
+        paddleRight.y = targetY;
+      } else {
+        paddleRight.y += Math.sign(delta) * paddleRight.speed;
+      }
+      clampPaddle(paddleRight);
+    }
+
+    function update() {
+      if (scores.isGameOver) {
+        return;
+      }
+
+      if (paddleLeft.moveUp) paddleLeft.y -= paddleLeft.speed;
+      if (paddleLeft.moveDown) paddleLeft.y += paddleLeft.speed;
+      clampPaddle(paddleLeft);
+
+      aiMove();
+
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      checkCollisions();
+    }
+
+    function gameLoop() {
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function handleKey(event, isPressed) {
+      const key = event.key.toLowerCase();
+      if (key === "arrowup" || key === "w") {
+        paddleLeft.moveUp = isPressed;
+        event.preventDefault();
+      }
+      if (key === "arrowdown" || key === "s") {
+        paddleLeft.moveDown = isPressed;
+        event.preventDefault();
+      }
+    }
+
+    function resetGame() {
+      scores.player = 0;
+      scores.cpu = 0;
+      scores.winner = null;
+      scores.isGameOver = false;
+      playerScoreEl.textContent = "0";
+      cpuScoreEl.textContent = "0";
+      statusEl.textContent = "";
+
+      paddleLeft.y = (canvas.height - paddleLeft.height) / 2;
+      paddleRight.y = (canvas.height - paddleRight.height) / 2;
+      paddleLeft.moveUp = false;
+      paddleLeft.moveDown = false;
+
+      resetBall(Math.random() > 0.5);
+    }
+
+    document.addEventListener("keydown", (event) => handleKey(event, true));
+    document.addEventListener("keyup", (event) => handleKey(event, false));
+    restartBtn.addEventListener("click", resetGame);
+
+    resetGame();
+    gameLoop();
+  </script>
 </body>
 </html>
